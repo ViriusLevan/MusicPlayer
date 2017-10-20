@@ -3,17 +3,32 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_shuffle"
-        android:icon="@drawable/shuffle"
+        android:id="@+id/action_search"
+        android:icon="@drawable/search"
         android:orderInCategory="1"
+        android:title="search"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_repeat"
+        android:icon="@drawable/repeat_none"
+        android:orderInCategory="2"
+        android:title="search"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_shuffle"
+        android:icon="@drawable/shuffle_off"
+        android:orderInCategory="3"
         app:showAsAction="always"
         android:title="Shuffle"/>
 
     <item
         android:id="@+id/action_close"
         android:icon="@drawable/close"
-        android:orderInCategory="2"
+        android:orderInCategory="4"
         app:showAsAction="always"
         android:title="End"/>
 
 </menu>
+

@@ -1,8 +1,10 @@
 package com.example.android.musicplayer;
 
 import android.Manifest;
+import android.content.ClipData;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.support.annotation.DrawableRes;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import java.util.ArrayList;
@@ -36,9 +38,11 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     private boolean musicBound=false;
     private MusicController controller;
     private boolean paused=false, playbackPaused=false;
+    private MenuItem repeat, shuffle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -188,6 +192,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     {
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.main, menu);
+
+
         return true;
     }
 
@@ -195,8 +201,30 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     public boolean onOptionsItemSelected(MenuItem item) {
         //menu item selected
         switch (item.getItemId()) {
+            case R.id.action_search:
+                //search
+                break;
+            case R.id.action_repeat:
+                musicSrv.toggleRepeat();
+
+                /*repeat = (MenuItem) findViewById(R.id.action_repeat);
+                if(musicSrv.getRepeat() == 0){
+                    repeat.setIcon(R.drawable.repeat_none);
+                }else if(musicSrv.getRepeat() == 0){
+                    repeat.setIcon(R.drawable.repeat_once);
+                }else {
+                    repeat.setIcon(R.drawable.repeat_all);
+                }*/
+                break;
             case R.id.action_shuffle:
                 musicSrv.setShuffle();
+
+                /*shuffle = (MenuItem) findViewById(R.id.action_shuffle);
+                if(musicSrv.getShuffle()){
+                    shuffle.setIcon(R.drawable.shuffle_on);
+                }else{
+                    shuffle.setIcon(R.drawable.shuffle_off);
+                }*/
                 break;
             case R.id.action_close:
                 stopService(playIntent);

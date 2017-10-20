@@ -16,7 +16,13 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.PowerManager;
 import android.util.Log;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 import java.util.Random;
+import java.util.Stack;
+
 import android.app.Notification;
 import android.app.PendingIntent;
 
@@ -32,9 +38,12 @@ public class MusicService extends Service implements
     //media player
     private MediaPlayer player;
     //song list
-    private ArrayList<Song> songs;
+    private ArrayList<Song> songArrayList;
+    private List<Song> songList, repeatList;
+//    private Queue<Song> songQueue;
+    private Stack<Song> songStack;
     //current position
-    private int songPosn;
+    private int songPosn, rCount=0;
 
     private final IBinder musicBind = new MusicBinder();
 
@@ -42,9 +51,13 @@ public class MusicService extends Service implements
     private static final int NOTIFY_ID=1;
 
     private boolean shuffle=false;
+    private byte repeat = 0;
     private Random rand;
 
     public void onCreate(){
+        songStack = new Stack<>();
+        songList = new LinkedList<>();
+
         //create the service
         super.onCreate();
         //initialize position
@@ -79,7 +92,7 @@ public class MusicService extends Service implements
     }
 
     public void setList(ArrayList<Song> theSongs){
-        songs=theSongs;
+        songArrayList=theSongs;
     }
 
     public class MusicBinder extends Binder {
@@ -93,8 +106,11 @@ public class MusicService extends Service implements
         player.reset();
 
         //get song
-        Song playSong = songs.get(songPosn);
-        songTitle=playSong.getTitle();
+        //Song playSong = songQueue.peek();
+        Song playSong = songList.get(songPosn);
+        songStack.add(songList.remove(songPosn));
+        songTitle = playSong.getTitle();
+
         //get id
         long currSong = playSong.getID();
         //set uri
@@ -113,6 +129,20 @@ public class MusicService extends Service implements
 
     public void setSong(int songIndex){
         songPosn=songIndex;
+        //resetting
+        songList.clear();
+        songStack.clear();
+        //creating a song queue everytime the user touches a song
+        for (int i = 0; i < songArrayList.size(); i++){
+            if(i != songPosn){
+                songList.add(songArrayList.get(i));
+            }
+        }
+        songList.add(songArrayList.get(songPosn));
+        songPosn = songList.size()-1;
+        if(repeat == 2){
+            repeatList = songList;
+        }
     }
 
     public int getPosn(){
@@ -140,31 +170,76 @@ public class MusicService extends Service implements
     }
 
     public void playPrev(){
-        songPosn--;
-        if(songPosn<0) songPosn=songs.size()-1;
-        playSong();
+        if (songStack.size()>1){
+            songList.add(songStack.pop());
+            songPosn = songList.size();
+            songList.add(songStack.pop());
+            playSong();
+        }else{
+            player.stop();
+        }
+        /*songPosn--;
+        if(songPosn<0) songPosn=songList.size()-1;*/
     }
 
     //skip to next
     public void playNext(){
-        if(shuffle){
-            int newSong = songPosn;
-            while(newSong==songPosn){
-                newSong=rand.nextInt(songs.size());
+        if(songList.isEmpty()){
+            if(repeat == 2){
+                songList = repeatList;
+                songPosn = 0;
+                playSong();
+            }else{
+                player.stop();
             }
+        }
+        else if(shuffle){
+            int newSong = songPosn;
+            /*while(newSong==songPosn){
+                newSong=rand.nextInt(songList.size());
+            }*/
+            newSong = rand.nextInt(songList.size()-1);
             songPosn=newSong;
+            playSong();
         }
         else{
-            songPosn++;
-            if(songPosn>=songs.size()) songPosn=0;
+            /*songPosn++;
+            if(songPosn>=songArrayList.size()) songPosn=0;*/
+            songPosn = 0;
+            playSong();
+            /*if(repeat == 1){
+                if(rCount == 0){
+                    songPosn = songList.size();
+                    songList.add(songStack.pop());
+                    rCount++;
+                    playSong();
+                }else{
+                    songPosn = songList.size()-1;
+                    rCount=0;
+                    playSong();
+                }
+            }*/
         }
-        playSong();
+
     }
 
     public void setShuffle(){
         if(shuffle) shuffle=false;
         else shuffle=true;
     }
+
+
+    public boolean getShuffle(){return shuffle;}
+
+    public void toggleRepeat (){
+        if(repeat>1){
+            repeat = 0;
+        }else{
+            repeat++;
+        }
+    }
+
+    public byte getRepeat(){return  repeat;}
 
     @Nullable
     @Override
@@ -179,6 +254,14 @@ public class MusicService extends Service implements
 
     @Override
     public void onCompletion(MediaPlayer mp) {
+        if(repeat == 1){
+            while (rCount == 0){
+                rCount++;
+                player.seekTo(0);
+                player.start();
+            }
+            rCount=0;
+        }
         if(player.getCurrentPosition()>0){
             mp.reset();
             playNext();
