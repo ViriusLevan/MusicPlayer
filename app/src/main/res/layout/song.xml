@@ -1,28 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
-        android:layout_height="fill_parent"
-        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
         android:onClick="songPicked"
         android:orientation="vertical"
-        android:padding="5dp">
+        android:padding="8dp">
+
+        <ImageView
+            android:id="@+id/song_image"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/music"
+            android:layout_marginRight="8dp"/>
 
         <TextView
             android:id="@+id/song_title"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/song_image"
             android:textColor="#524387"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            android:textSize="18sp"
+            android:textStyle="bold"/>
 
         <TextView
             android:id="@+id/song_artist"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_toRightOf="@+id/song_image"
+            android:layout_below="@id/song_title"
+            android:layout_marginTop="5dp"
             android:textColor="#524387"
-            android:textSize="18sp" />
+            android:textSize="16sp" />
 
 
-    </LinearLayout>
+    </RelativeLayout>
