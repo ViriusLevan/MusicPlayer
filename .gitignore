@@ -9,3 +9,4 @@
 .externalNativeBuild
 MusicPlayer.iml
 /app/app.iml
+.idea/vcs.xml

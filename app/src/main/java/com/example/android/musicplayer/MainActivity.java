@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.ClipData;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.provider.MediaStore;
 import android.support.annotation.DrawableRes;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -129,6 +130,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                     (android.provider.MediaStore.Audio.Media._ID);
             int artistColumn = musicCursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.ARTIST);
+            int albumColumn = musicCursor.getColumnIndex//doesn't work as there is no getBitmap
+                    (MediaStore.Audio.Media.ALBUM);//probably have to switch to MetadataRetriever
             //add songs to list
             do {
                 long thisId = musicCursor.getLong(idColumn);
@@ -329,6 +332,27 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     @Override
     public void onBackPressed() {
         moveTaskToBack(true);
+    }
+
+    protected void goToMetadataEdit(View view){
+        Intent i = new Intent(this, Metadata.class);
+        //try to use same method as songPicked(), probably need to tag the button,
+        // i mean if it CAN be tagged, also need to change parameter if it isn't a view
+        Song selected = musicSrv.getSong(Integer.parseInt(view.getTag().toString()));
+        if(selected !=null){
+            long id = selected.getID();
+            String title = selected.getTitle();
+            String artist = selected.getArtist();
+            if(id == -1){
+                //do nothing
+                //stopgap measure till i find a better method to pass
+                //it's probably better now, but i haven't tested it yet
+            }else{
+                i.putExtra("trackID", id);
+                i.putExtra("trackTitle", title);
+                i.putExtra("trackArtist", artist);
+            }
+        }
     }
 
 }

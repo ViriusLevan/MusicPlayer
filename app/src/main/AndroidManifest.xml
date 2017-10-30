@@ -19,7 +19,7 @@
             android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <service android:name="com.example.MusicPlayer.MusicService"/>
+                <!--<service android:name="com.example.MusicPlayer.MusicService"/>-->
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.user.projectmusicplayer.Metadata_Activity"
+    tools:context=".Metadata"
     android:weightSum="1">
 
 
@@ -13,12 +13,13 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-    <ImageButton
-        android:id="@+id/imageButton"
-        android:layout_width="224dp"
-        android:layout_height="224dp"
-        android:layout_gravity="center"
-        app:srcCompat="?android:attr/alertDialogIcon" />
+        <ImageButton
+            android:id="@+id/imgBtnAlbumArt"
+            android:layout_width="224dp"
+            android:layout_height="224dp"
+            android:layout_gravity="center"
+            android:cropToPadding="false"
+            app:srcCompat="@drawable/music" />
 
         <EditText
             android:id="@+id/editTitle"
@@ -49,20 +50,19 @@
             android:textSize="18sp" />
 
         <EditText
+            android:id="@+id/editGenre"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="Genre"
+            android:inputType="textPersonName" />
+
+        <EditText
             android:id="@+id/editTrackNum"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ems="10"
             android:hint="Track Number"
-            android:inputType="textPersonName"
-            android:textSize="18sp" />
-
-        <EditText
-            android:id="@+id/editComment"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:hint="Comment"
             android:inputType="textPersonName"
             android:textSize="18sp" />
 
@@ -76,29 +76,20 @@
             android:textSize="18sp" />
 
         <EditText
-            android:id="@+id/editLyrics"
+            android:id="@+id/editWriter"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ems="10"
-            android:hint="Lyrics"
+            android:hint="Writer"
             android:inputType="textPersonName"
             android:textSize="18sp" />
 
         <EditText
-            android:id="@+id/editEncoder"
+            android:id="@+id/editBitrate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ems="10"
-            android:hint="Encoder"
-            android:inputType="textPersonName"
-            android:textSize="18sp" />
-
-        <EditText
-            android:id="@+id/editCharSet"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:hint="Character Set"
+            android:hint="Bitrate"
             android:inputType="textPersonName"
             android:textSize="18sp" />
 
@@ -117,10 +108,10 @@
                 android:text="Reset" />
 
             <Button
-                android:id="@+id/buttonGetData"
+                android:id="@+id/buttonGetMeta"
                 android:layout_width="140dp"
                 android:layout_height="wrap_content"
-                android:text="Get Meta Data" />
+                android:text="Get Metadata" />
 
 
         </LinearLayout>

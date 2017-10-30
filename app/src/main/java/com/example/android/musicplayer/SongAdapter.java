@@ -52,6 +52,11 @@ public class SongAdapter extends BaseAdapter {
         artistView.setText(currSong.getArtist());
         //set position as tag
         songLay.setTag(position);
+
+        //spinner tag example, dunno if this works
+        /*settingsSpinner.setTag("bg_color_spinner");
+        settingsSpinner.setAdapter(new BackgroundColorAdapter());*/
+
         return songLay;
     }
 

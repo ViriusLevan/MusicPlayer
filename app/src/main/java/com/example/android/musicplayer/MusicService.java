@@ -132,7 +132,7 @@ public class MusicService extends Service implements
         //resetting
         songList.clear();
         songStack.clear();
-        //creating a song queue everytime the user touches a song
+        //create a song queue everytime the user touches a song
         for (int i = 0; i < songArrayList.size(); i++){
             if(i != songPosn){
                 songList.add(songArrayList.get(i));
@@ -320,4 +320,10 @@ public class MusicService extends Service implements
         stopForeground(true);
     }
 
+    public Song getSong(int songIndex){
+        if(songArrayList.get(songIndex) == null){
+            return null;
+        }
+        return (songArrayList.get(songIndex));
+    }
 }
