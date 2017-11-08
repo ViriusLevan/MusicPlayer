@@ -8,6 +8,8 @@ import android.graphics.Color;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -29,7 +31,8 @@ public class Metadata extends Activity {
 
     ImageButton album_art;
     EditText title, artist, album, genre,
-            trackNumber, composer, writer, bitrate;
+            trackNumber, composer, writer;
+    Button saveButton, getMetaButton, resetButton;
 
     MediaMetadataRetriever metaRetriever;
     byte[] art;
@@ -38,10 +41,11 @@ public class Metadata extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_metadata_);
+        //Declarations
         getInit();
 
-        //Metadata retrieval
 
+        //Metadata retrieval
         //get id
         long currSong = getIntent().getLongExtra("trackID", 0);
         //might be redundant because metadata is extracted again
@@ -105,13 +109,80 @@ public class Metadata extends Activity {
         } catch (Exception e){
             writer.setText("Unknown Writer");
         }
-        try {
-            bitrate.setText(metaRetriever
-                    .extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE));
-        } catch (Exception e){
-            bitrate.setText("Unknown Bitrate");
-        }
 
+        resetButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                String trackTitle = getIntent().getStringExtra("trackTitle");
+                String trackArtist = getIntent().getStringExtra("trackArtist");
+                try {
+                    art = metaRetriever.getEmbeddedPicture();
+                    Bitmap songImage = BitmapFactory
+                            .decodeByteArray(art, 0, art.length);
+                    album_art.setImageBitmap(songImage);
+                } catch (Exception e) {
+                    album_art.setBackgroundColor(Color.GRAY);
+                }
+                try {
+                    title.setText(metaRetriever
+                            .extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE));
+                } catch (Exception e){
+                    title.setText(trackTitle);
+                }
+                try {
+                    album.setText(metaRetriever
+                            .extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM));
+                } catch (Exception e){
+                    album.setText("Unknown Album");
+                }
+                try {
+                    artist.setText(metaRetriever
+                            .extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST));
+                } catch (Exception e){
+                    artist.setText(trackArtist);
+                }
+                try {
+                    genre.setText(metaRetriever
+                            .extractMetadata(MediaMetadataRetriever.METADATA_KEY_GENRE));
+                } catch (Exception e){
+                    genre.setText("Unknown Genre");
+                }
+                try {
+                    trackNumber.setText(metaRetriever
+                            .extractMetadata(MediaMetadataRetriever.METADATA_KEY_CD_TRACK_NUMBER));
+                } catch (Exception e){
+                    trackNumber.setText("Unknown Track Number");
+                }
+                try {
+                    composer.setText(metaRetriever
+                            .extractMetadata(MediaMetadataRetriever.METADATA_KEY_COMPOSER));
+                } catch (Exception e){
+                    composer.setText("Unknown Composer");
+                }
+                try {
+                    writer.setText(metaRetriever
+                            .extractMetadata(MediaMetadataRetriever.METADATA_KEY_WRITER));
+                } catch (Exception e){
+                    writer.setText("Unknown Writer");
+                }
+            }
+        });
+
+        getMetaButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getMetadata();
+            }
+        });
+
+        saveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //i'll either use mediaMetadata or an API
+
+            }
+        });
 
     }
 
@@ -126,8 +197,10 @@ public class Metadata extends Activity {
         trackNumber = (EditText) findViewById(R.id.editTrackNum);
         composer = (EditText) findViewById(R.id.editComposer);
         writer = (EditText) findViewById(R.id.editWriter);
-        bitrate = (EditText) findViewById(R.id.editBitrate);
 
+        saveButton = findViewById(R.id.buttonSave);
+        getMetaButton = findViewById(R.id.buttonGetMeta);
+        resetButton = findViewById(R.id.buttonReset);
     }
 
     public void getMetadata(){//gets metadata from last.fm
@@ -142,21 +215,22 @@ public class Metadata extends Activity {
 
         Session session = Authenticator.getMobileSession(user,password,key,secret);
         if(artist.getText().toString().equals("Unknown Artist")
-                || artist.getText().toString().equals("<unknown>")){
-            Collection<Track> matchingTracks = Track.search(title.getText().toString(),key);
+                || artist.getText().toString().equals("<unknown>")){//if artist name is unknown
+            Collection<Track> matchingTracks = Track.search(title.getText().toString(),key);//Search based on title only
             for (Track track : matchingTracks){
 
             }
         }
-        else{
+        else{//artist name is known
             Collection<Track> matchingTracks = Track.search(title.getText().toString(),
-                    artist.getText().toString(), 25, key);
+                    artist.getText().toString(), 25, key);//search based on title, string, and limit results to 25
             for (Track track : matchingTracks){
 
             }
         }
-
 
     }
+
+
 
 }
