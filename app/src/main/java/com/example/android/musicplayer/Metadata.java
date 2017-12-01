@@ -5,9 +5,16 @@ import android.content.ContentUris;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.media.MediaMetadata;
 import android.media.MediaMetadataRetriever;
+import android.media.session.MediaSession;
+import android.media.session.MediaSessionManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.media.MediaDescriptionCompat;
+import android.support.v4.media.MediaMetadataCompat;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -16,6 +23,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.concurrent.TimeUnit;
 
 import de.umass.lastfm.Authenticator;
@@ -35,6 +45,10 @@ public class Metadata extends Activity {
     Button saveButton, getMetaButton, resetButton;
 
     MediaMetadataRetriever metaRetriever;
+    MediaSessionCompat mediaSession =
+            new MediaSessionCompat(getApplicationContext(), "tempSession");
+    List<android.support.v4.media.session.MediaSessionCompat.QueueItem> solo;
+
     byte[] art;
 
     @Override
@@ -43,8 +57,7 @@ public class Metadata extends Activity {
         setContentView(R.layout.activity_metadata_);
         //Declarations
         getInit();
-
-
+        mediaSession.setActive(true);
         //Metadata retrieval
         //get id
         long currSong = getIntent().getLongExtra("trackID", 0);
@@ -55,6 +68,11 @@ public class Metadata extends Activity {
         Uri trackUri = ContentUris.withAppendedId(
                 android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                 currSong);
+
+        solo.add(android.support.v4.media.session.MediaSessionCompat.QueueItem.
+                fromQueueItem(new MediaSessionCompat.QueueItem(
+                        new MediaDescriptionCompat.Builder().build(), 1)));//OF fucking course this doesnt work
+        mediaSession.setQueue(solo);
 
         metaRetriever = new MediaMetadataRetriever();
         metaRetriever.setDataSource(getApplicationContext(), trackUri );
@@ -180,7 +198,19 @@ public class Metadata extends Activity {
             @Override
             public void onClick(View v) {
                 //i'll either use mediaMetadata or an API
-
+                MediaMetadataCompat.Builder builder = new MediaMetadataCompat.Builder();
+                album_art.buildDrawingCache();
+                builder.putBitmap(MediaMetadata.METADATA_KEY_ART, album_art.getDrawingCache());
+                builder.putString(MediaMetadata.METADATA_KEY_TITLE, title.getText().toString());
+                builder.putString(MediaMetadata.METADATA_KEY_ARTIST, artist.getText().toString());
+                builder.putString(MediaMetadata.METADATA_KEY_ALBUM, album.getText().toString());
+                builder.putString(MediaMetadata.METADATA_KEY_GENRE, genre.getText().toString());
+                builder.putLong(MediaMetadata.METADATA_KEY_TRACK_NUMBER,
+                        Long.parseLong(trackNumber.getText().toString()));
+                builder.putString(MediaMetadata.METADATA_KEY_COMPOSER, composer.getText().toString());
+                builder.putString(MediaMetadata.METADATA_KEY_WRITER, writer.getText().toString());
+                mediaSession.setMetadata(builder.build());
+                mediaSession.release();
             }
         });
 
