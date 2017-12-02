@@ -17,7 +17,7 @@ import android.widget.TextView;
 
 public class SongAdapter extends BaseAdapter {
 
-    private ArrayList<Song> songs;
+    private ArrayList<Audio> songs;
     private LayoutInflater songInf;
 
     @Override
@@ -46,7 +46,7 @@ public class SongAdapter extends BaseAdapter {
         TextView songView = (TextView)songLay.findViewById(R.id.song_title);
         TextView artistView = (TextView)songLay.findViewById(R.id.song_artist);
         //get song using position
-        Song currSong = songs.get(position);
+        Audio currSong = songs.get(position);
         //get title and artist strings
         songView.setText(currSong.getTitle());
         artistView.setText(currSong.getArtist());
@@ -60,7 +60,7 @@ public class SongAdapter extends BaseAdapter {
         return songLay;
     }
 
-    public SongAdapter(Context c, ArrayList<Song> theSongs){
+    public SongAdapter(Context c, ArrayList<Audio> theSongs){
         songs=theSongs;
         songInf=LayoutInflater.from(c);
     }

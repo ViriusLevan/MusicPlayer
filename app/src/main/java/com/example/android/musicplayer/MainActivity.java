@@ -33,19 +33,23 @@ import android.widget.RelativeLayout;
 public class MainActivity extends AppCompatActivity implements MediaPlayerControl {
 
     private ArrayList<Song> songList;
+    public ArrayList<Audio> audioList;
     private ListView songView;
     private MusicService musicSrv;
     private Intent playIntent;
-    private boolean musicBound=false;
+    boolean musicBound=false;
     private MusicController controller;
     private boolean paused=false, playbackPaused=false;
     private MenuItem repeat, shuffle;
+    public static final String Broadcast_PLAY_NEW_AUDIO
+            ="com.example.android.musicplayer.PlayNewAudio";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        loadAudio();
+        playAudio(0);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -60,17 +64,17 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         }
 
         songView = (ListView)findViewById(R.id.song_list);
-        songList = new ArrayList<Song>();
+//        songList = new ArrayList<Song>();
+//
+//        getSongList();
+//
+//        Collections.sort(songList, new Comparator<Song>(){
+//            public int compare(Song a, Song b){
+//                return a.getTitle().compareTo(b.getTitle());
+//            }
+//        });
 
-        getSongList();
-
-        Collections.sort(songList, new Comparator<Song>(){
-            public int compare(Song a, Song b){
-                return a.getTitle().compareTo(b.getTitle());
-            }
-        });
-
-        SongAdapter songAdt = new SongAdapter(this, songList);
+        SongAdapter songAdt = new SongAdapter(this, audioList);
         songView.setAdapter(songAdt);
 
 
@@ -87,65 +91,118 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         });
     }
 
+
+
     @Override
     protected void onStart() {
         super.onStart();
-        if(playIntent==null){
-            playIntent = new Intent(this, MusicService.class);
-            bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
-            startService(playIntent);
-        }
+//        if(playIntent==null){
+//            playIntent = new Intent(this, MusicService.class);
+//            bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
+//            startService(playIntent);
+//        }
+        playAudio(0);
     }
 
     //connect to the service
     private ServiceConnection musicConnection = new ServiceConnection(){
 
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            MusicService.MusicBinder binder = (MusicService.MusicBinder)service;
-            //get service
-            musicSrv = binder.getService();
-            //pass list
-            musicSrv.setList(songList);
-            musicBound = true;
-        }
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder service) {
+        //Bind to local service, cast the binder, and get local service instance
+        MusicService.MusicBinder binder = (MusicService.MusicBinder)service;
+        //get service
+        musicSrv = binder.getService();
+        //pass list
+        musicSrv.setList(songList);
+        musicBound = true;
+    }
 
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
             musicBound = false;
-        }
-    };
+        }};
 
-    public void getSongList() {
-        //retrieve song info
-        ContentResolver musicResolver = getContentResolver();
-        Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
+    private void playAudio(int audioIndex){
+        //check if service is active
+        if(!musicBound){
+            //Store Serializable audioList to SharedPreferences
+            StorageUtil storage = new StorageUtil(getApplicationContext());
+            storage.storeAudio(audioList);
+            storage.storeAudioIndex(audioIndex);
 
-        if(musicCursor!=null && musicCursor.moveToFirst()){
-            //get columns
-            int titleColumn = musicCursor.getColumnIndex
-                    (android.provider.MediaStore.Audio.Media.TITLE);
-            int idColumn = musicCursor.getColumnIndex
-                    (android.provider.MediaStore.Audio.Media._ID);
-            int artistColumn = musicCursor.getColumnIndex
-                    (android.provider.MediaStore.Audio.Media.ARTIST);
-            int albumColumn = musicCursor.getColumnIndex//doesn't work as there is no getBitmap
-                    (MediaStore.Audio.Media.ALBUM);//probably have to switch to MetadataRetriever
-            //add songs to list
-            do {
-                long thisId = musicCursor.getLong(idColumn);
-                String thisTitle = musicCursor.getString(titleColumn);
-                String thisArtist = musicCursor.getString(artistColumn);
-                songList.add(new Song(thisId, thisTitle, thisArtist));
-            }
-            while (musicCursor.moveToNext());
+            Intent playerIntent = new Intent
+                    (this, MusicService.class);
+            startService(playerIntent);
+            bindService(playerIntent, musicConnection,
+                    Context.BIND_AUTO_CREATE);
+        }else{
+            //Store the new audioIndex to SharedPreferences
+            StorageUtil storage = new StorageUtil(getApplicationContext());
+            storage.storeAudioIndex(audioIndex);
+
+            //Service is active
+            //Send a broadcast to the service -> PLAY_NEW_AUDIO
+            Intent broadcastIntent = new Intent(Broadcast_PLAY_NEW_AUDIO);
+            sendBroadcast(broadcastIntent);
         }
     }
 
+    private void loadAudio() {
+        ContentResolver contentResolver = getContentResolver();
+
+        Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        String selection = MediaStore.Audio.Media.IS_MUSIC + "!= 0";
+        String sortOrder = MediaStore.Audio.Media.TITLE + " ASC";
+        Cursor cursor = contentResolver.query(uri, null, selection, null, sortOrder);
+
+        if (cursor != null && cursor.getCount() > 0) {
+            audioList = new ArrayList<>();
+            while (cursor.moveToNext()) {
+                String data = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
+                String title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
+                String album = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
+                String artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
+
+                // Save to audioList
+                audioList.add(new Audio(data, title, album, artist));
+            }
+        }
+        cursor.close();
+    }
+
+
+//    public void getSongList() {
+//        //retrieve song info
+//        ContentResolver musicResolver = getContentResolver();
+//        Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+//        Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
+//
+//        if(musicCursor!=null && musicCursor.moveToFirst()){
+//            //get columns
+//            int titleColumn = musicCursor.getColumnIndex
+//                    (android.provider.MediaStore.Audio.Media.TITLE);
+//            int idColumn = musicCursor.getColumnIndex
+//                    (android.provider.MediaStore.Audio.Media._ID);
+//            int artistColumn = musicCursor.getColumnIndex
+//                    (android.provider.MediaStore.Audio.Media.ARTIST);
+//            int albumColumn = musicCursor.getColumnIndex//doesn't work as there is no getBitmap
+//                    (MediaStore.Audio.Media.ALBUM);//probably have to switch to MetadataRetriever
+//            //add songs to list
+//            do {
+//                long thisId = musicCursor.getLong(idColumn);
+//                String thisTitle = musicCursor.getString(titleColumn);
+//                String thisArtist = musicCursor.getString(artistColumn);
+//                songList.add(new Song(thisId, thisTitle, thisArtist));
+//            }
+//            while (musicCursor.moveToNext());
+//        }
+//    }
+
     public void songPicked(View view){
-        musicSrv.setSong(Integer.parseInt(view.getTag().toString()));
-        musicSrv.playSong();
+//        musicSrv.setSong(Integer.parseInt(view.getTag().toString()));
+//        musicSrv.playSong();
+        playAudio(Integer.parseInt(view.getTag().toString()));
     }
 
     private void setController(){
@@ -171,7 +228,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
     //play next
     private void playNext(){
-        musicSrv.playNext();
+        musicSrv.skipToNext();
         if(playbackPaused){
             setController();
             playbackPaused=false;
@@ -181,7 +238,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
     //play previous
     private void playPrev(){
-        musicSrv.playPrev();
+        musicSrv.skipToPrevious();
         if(playbackPaused){
             setController();
             playbackPaused=false;
@@ -239,16 +296,31 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     }
 
     @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        savedInstanceState.putBoolean("ServiceState", musicBound);
+        super.onSaveInstanceState(savedInstanceState);
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        musicBound = savedInstanceState.getBoolean("ServiceState");
+    }
+
+    @Override
     protected void onDestroy() {
-        if (musicBound) unbindService(musicConnection);
-        stopService(playIntent);
-        musicSrv=null;
         super.onDestroy();
+        if (musicBound){
+            unbindService(musicConnection);
+            musicSrv.stopSelf();
+        }
+//        stopService(playIntent);
+//        musicSrv=null;
     }
 
     @Override
     public void start() {
-        musicSrv.go();
+        musicSrv.playSong();
     }
 
     @Override
@@ -259,14 +331,14 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
     @Override
     public int getDuration() {
-        if(musicSrv!=null && musicBound && musicSrv.isPng())
+        if(musicSrv!=null && musicBound && musicSrv.isPlaying())
             return musicSrv.getDur();
         else return 0;
     }
 
     @Override
     public int getCurrentPosition() {
-        if(musicSrv!=null && musicBound && musicSrv.isPng())
+        if(musicSrv!=null && musicBound && musicSrv.isPlaying())
             return musicSrv.getPosn();
         else return 0;
     }
@@ -279,7 +351,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     @Override
     public boolean isPlaying() {
         if(musicSrv!=null && musicBound)
-            return musicSrv.isPng();
+            return musicSrv.isPlaying();
         return false;
     }
 
