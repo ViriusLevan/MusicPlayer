@@ -32,10 +32,9 @@ import android.widget.RelativeLayout;
 
 public class MainActivity extends AppCompatActivity implements MediaPlayerControl {
 
-    private ArrayList<Song> songList;
+    //private ArrayList<Song> songList;
     public ArrayList<Audio> audioList;
     private ListView songView;
-    private MusicService musicSrv;
     private Intent playIntent;
     boolean musicBound=false;
     private MusicController controller;
@@ -43,6 +42,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     private MenuItem repeat, shuffle;
     public static final String Broadcast_PLAY_NEW_AUDIO
             ="com.example.android.musicplayer.PlayNewAudio";
+
+    private MusicService musicSrv;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,7 +115,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         //get service
         musicSrv = binder.getService();
         //pass list
-        musicSrv.setList(songList);
+        //musicSrv.setList(songList);
         musicBound = true;
     }
 
@@ -312,7 +313,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         super.onDestroy();
         if (musicBound){
             unbindService(musicConnection);
-            musicSrv.stopSelf();
+            musicSrv.onDestroy();
+            //musicSrv.stopSelf();
         }
 //        stopService(playIntent);
 //        musicSrv=null;

@@ -2,6 +2,7 @@ package com.example.android.musicplayer;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -34,6 +35,7 @@ public class StorageUtil {
     }
 
     public ArrayList<Audio> loadAudio() {
+        Log.d("load Audio","AAAAAAAAA");
         preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
         Gson gson = new Gson();
         String json = preferences.getString("audioArrayList", null);

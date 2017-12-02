@@ -100,9 +100,13 @@ public class MusicService extends Service implements
     private static final int NOTIFICATION_ID = 101;
 
     public void onCreate(){
+
         songStack = new Stack<>();
         songList = new LinkedList<>();
 
+
+        //create the service
+        super.onCreate();
         // Manage incoming phone calls during playback.
         // Pause MediaPlayer on incoming call,
         // Resume on hangup.
@@ -112,16 +116,11 @@ public class MusicService extends Service implements
         //Listen for new Audio to play -- BroadcastReceiver
         register_playNewAudio();
 
-        //create the service
-        super.onCreate();
         //initialize position
         songPosn=0;
         //create player
         player = new MediaPlayer();
-
         rand=new Random();
-
-        initMusicPlayer();
     }
 
     public void initMusicPlayer(){
@@ -158,9 +157,9 @@ public class MusicService extends Service implements
         player.prepareAsync();
     }
 
-    public void setList(ArrayList<Song> theSongs){
-        songArrayList=theSongs;
-    }
+//    public void setList(ArrayList<Song> theSongs){
+//        songArrayList=theSongs;
+//    }
 
 
     public class MusicBinder extends Binder {
@@ -169,40 +168,46 @@ public class MusicService extends Service implements
         }
     }
 
-    public void playSong(){
-        if(!player.isPlaying()){
+//    public void playSong(){
+//        if(!player.isPlaying()){
+//            player.start();
+//        }
+//
+//        //play a song
+//        player.reset();
+//
+//        //get song
+//        //Song playSong = songQueue.peek();
+//        Audio playSong = audioList.get(songPosn);
+//        songStack.add(songList.remove(songPosn));
+//        songTitle = playSong.getTitle();
+//
+//        //get id
+//        long currSong = playSong.getID();
+//        //set uri
+//        Uri trackUri = ContentUris.withAppendedId(
+//                android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+//                currSong);
+//
+//        try{
+//            player.setDataSource(getApplicationContext(), trackUri);
+//        }
+//        catch(Exception e){
+//            Log.e("MUSIC SERVICE", "Error setting data source", e);
+//        }
+//        player.prepareAsync();
+//    }
+    public void playSong() {
+        if (!player.isPlaying()) {
             player.start();
         }
-
-        //play a song
-        player.reset();
-
-        //get song
-        //Song playSong = songQueue.peek();
-        Song playSong = songList.get(songPosn);
-        songStack.add(songList.remove(songPosn));
-        songTitle = playSong.getTitle();
-
-        //get id
-        long currSong = playSong.getID();
-        //set uri
-        Uri trackUri = ContentUris.withAppendedId(
-                android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                currSong);
-
-        try{
-            player.setDataSource(getApplicationContext(), trackUri);
-        }
-        catch(Exception e){
-            Log.e("MUSIC SERVICE", "Error setting data source", e);
-        }
-        player.prepareAsync();
     }
 
     public void pausePlayer(){
         if(player.isPlaying()){
             player.pause();
             resumePosition = player.getCurrentPosition();
+            player.seekTo(resumePosition);
         }
     }
 
@@ -275,11 +280,14 @@ public class MusicService extends Service implements
     private BroadcastReceiver playNewAudio = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-
-            //Get the new media index form SharedPreferences
+//            if(){
+//                return;
+//            }
+            //Get the new media index from SharedPreferences
             audioIndex = new StorageUtil(getApplicationContext()).loadAudioIndex();
             if (audioIndex != -1 && audioIndex < audioList.size()) {
                 //index is in a valid range
+                Log.d("Broadcast Receiver","AAAAAAA");
                 activeAudio = audioList.get(audioIndex);
             } else {
                 stopSelf();
@@ -382,11 +390,32 @@ public class MusicService extends Service implements
 
         if (audioIndex == audioList.size() - 1) {
             //if last in playlist
-            audioIndex = 0;
+            if(shuffle){
+                audioIndex = rand.nextInt(audioList.size()-2);
+            }else{
+                if(repeat == 2){
+                    repeat=0;
+                    audioIndex = 0;
+                }else{
+                    audioIndex = 0;
+                    new StorageUtil(getApplicationContext()).storeAudioIndex(audioIndex);
+                    stopPlayer();
+                    return;
+                }
+            }
             activeAudio = audioList.get(audioIndex);
         } else {
             //get next in playlist
-            activeAudio = audioList.get(++audioIndex);
+            if(shuffle){
+                int check = audioIndex;
+                while(check == audioIndex){
+                    check = rand.nextInt(audioList.size()-1);
+                }
+                audioIndex = check;
+                activeAudio = audioList.get(check);
+            }else{
+                activeAudio = audioList.get(++audioIndex);
+            }
         }
 
         //Update stored index
@@ -444,7 +473,8 @@ public class MusicService extends Service implements
                 R.drawable.music); //replace with your own image
 
         // Create a new Notification
-        NotificationCompat.Builder notificationBuilder = (NotificationCompat.Builder) new NotificationCompat.Builder(this)
+        NotificationCompat.Builder notificationBuilder =
+                (NotificationCompat.Builder) new NotificationCompat.Builder(this)
                 .setShowWhen(false)
                 // Set the Notification style
                 .setStyle(new NotificationCompat.MediaStyle()
@@ -462,15 +492,19 @@ public class MusicService extends Service implements
                 .setContentTitle(activeAudio.getAlbum())
                 .setContentInfo(activeAudio.getTitle())
                 // Add playback actions
-                .addAction(android.R.drawable.ic_media_previous, "previous", playbackAction(3))
+                .addAction(android.R.drawable.ic_media_previous,
+                        "previous", playbackAction(3))
                 .addAction(notificationAction, "pause", play_pauseAction)
-                .addAction(android.R.drawable.ic_media_next, "next", playbackAction(2));
+                .addAction(android.R.drawable.ic_media_next,
+                        "next", playbackAction(2));
 
-        ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(NOTIFICATION_ID, notificationBuilder.build());
+        ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).
+                notify(NOTIFICATION_ID, notificationBuilder.build());
     }
 
     private void removeNotification() {
-        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancel(NOTIFICATION_ID);
     }
 
@@ -517,23 +551,23 @@ public class MusicService extends Service implements
     }
 
 
-    public void setSong(int songIndex){
-        songPosn=songIndex;
-        //resetting
-        songList.clear();
-        songStack.clear();
-        //create a song queue everytime the user touches a song
-        for (int i = 0; i < songArrayList.size(); i++){
-            if(i != songPosn){
-                songList.add(songArrayList.get(i));
-            }
-        }
-        songList.add(songArrayList.get(songPosn));
-        songPosn = songList.size()-1;
-        if(repeat == 2){
-            repeatList = songList;
-        }
-    }
+//    public void setSong(int songIndex){
+//        songPosn=songIndex;
+//        //resetting
+//        songList.clear();
+//        songStack.clear();
+//        //create a song queue everytime the user touches a song
+//        for (int i = 0; i < songArrayList.size(); i++){
+//            if(i != songPosn){
+//                songList.add(songArrayList.get(i));
+//            }
+//        }
+//        songList.add(songArrayList.get(songPosn));
+//        songPosn = songList.size()-1;
+//        if(repeat == 2){
+//            repeatList = songList;
+//        }
+//    }
 
     public int getPosn(){
         return player.getCurrentPosition();
@@ -557,59 +591,59 @@ public class MusicService extends Service implements
         player.start();
     }
 
-    public void playPrev(){
-        if (songStack.size()>1){
-            songList.add(songStack.pop());
-            songPosn = songList.size();
-            songList.add(songStack.pop());
-            playSong();
-        }else{
-            player.stop();
-        }
-        /*songPosn--;
-        if(songPosn<0) songPosn=songList.size()-1;*/
-    }
-
-    //skip to next
-    public void playNext(){
-        if(songList.isEmpty()){
-            if(repeat == 2){
-                songList = repeatList;
-                songPosn = 0;
-                playSong();
-            }else{
-                player.stop();
-            }
-        }
-        else if(shuffle){
-            int newSong = songPosn;
-            /*while(newSong==songPosn){
-                newSong=rand.nextInt(songList.size());
-            }*/
-            newSong = rand.nextInt(songList.size()-1);
-            songPosn=newSong;
-            playSong();
-        }
-        else{
-            /*songPosn++;
-            if(songPosn>=songArrayList.size()) songPosn=0;*/
-            songPosn = 0;
-            playSong();
-            /*if(repeat == 1){
-                if(rCount == 0){
-                    songPosn = songList.size();
-                    songList.add(songStack.pop());
-                    rCount++;
-                    playSong();
-                }else{
-                    songPosn = songList.size()-1;
-                    rCount=0;
-                    playSong();
-                }
-            }*/
-        }
-
-    }
+//    public void playPrev(){
+//        if (songStack.size()>1){
+//            songList.add(songStack.pop());
+//            songPosn = songList.size();
+//            songList.add(songStack.pop());
+//            playSong();
+//        }else{
+//            player.stop();
+//        }
+//        /*songPosn--;
+//        if(songPosn<0) songPosn=songList.size()-1;*/
+//    }
+//
+//    //skip to next
+//    public void playNext(){
+//        if(songList.isEmpty()){
+//            if(repeat == 2){
+//                songList = repeatList;
+//                songPosn = 0;
+//                playSong();
+//            }else{
+//                player.stop();
+//            }
+//        }
+//        else if(shuffle){
+//            int newSong = songPosn;
+//            /*while(newSong==songPosn){
+//                newSong=rand.nextInt(songList.size());
+//            }*/
+//            newSong = rand.nextInt(songList.size()-1);
+//            songPosn=newSong;
+//            playSong();
+//        }
+//        else{
+//            /*songPosn++;
+//            if(songPosn>=songArrayList.size()) songPosn=0;*/
+//            songPosn = 0;
+//            playSong();
+//            /*if(repeat == 1){
+//                if(rCount == 0){
+//                    songPosn = songList.size();
+//                    songList.add(songStack.pop());
+//                    rCount++;
+//                    playSong();
+//                }else{
+//                    songPosn = songList.size()-1;
+//                    rCount=0;
+//                    playSong();
+//                }
+//            }*/
+//        }
+//
+//    }
 
     public void setShuffle(){
         if(shuffle) shuffle=false;
@@ -660,7 +694,7 @@ public class MusicService extends Service implements
         }
         if(player.getCurrentPosition()>0){
             mp.reset();
-            playNext();
+            skipToNext();
         }
     }
 
@@ -669,7 +703,8 @@ public class MusicService extends Service implements
         //Invoked when there has been an error during an asynchronous operation.
         switch (what) {
             case MediaPlayer.MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK:
-                Log.d("MediaPlayer Error", "MEDIA ERROR NOT VALID FOR PROGRESSIVE PLAYBACK " + extra);
+                Log.d("MediaPlayer Error",
+                        "MEDIA ERROR NOT VALID FOR PROGRESSIVE PLAYBACK " + extra);
                 break;
             case MediaPlayer.MEDIA_ERROR_SERVER_DIED:
                 Log.d("MediaPlayer Error", "MEDIA ERROR SERVER DIED " + extra);
@@ -685,6 +720,7 @@ public class MusicService extends Service implements
     @Override
     public void onPrepared(MediaPlayer mp) { //Invoked when the media source is ready for playback.
         //start playback
+        //playSong();
         playSong();
         //mp.start();
 
@@ -821,9 +857,10 @@ public class MusicService extends Service implements
             StorageUtil storage = new StorageUtil(getApplicationContext());
             audioList = storage.loadAudio();
             audioIndex = storage.loadAudioIndex();
-
+            Log.d("audioIndex",Integer.toString(audioIndex));
             if (audioIndex != -1 && audioIndex < audioList.size()) {
                 //index is in a valid range
+                Log.d("On Start Command","activeAudio GOT");
                 activeAudio = audioList.get(audioIndex);
             } else {
                 stopSelf();
