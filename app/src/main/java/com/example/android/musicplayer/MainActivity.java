@@ -3,6 +3,7 @@ package com.example.android.musicplayer;
 import android.Manifest;
 import android.content.ClipData;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Build;
 import android.provider.MediaStore;
 import android.support.annotation.DrawableRes;
@@ -11,12 +12,17 @@ import android.os.Bundle;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
+
 import android.net.Uri;
 import android.content.ContentResolver;
 import android.database.Cursor;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.ViewTreeObserver;
+import android.view.WindowManager;
+import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.os.IBinder;
@@ -28,6 +34,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.MediaController.MediaPlayerControl;
 import android.widget.RelativeLayout;
+
+import com.miguelcatalan.materialsearchview.MaterialSearchView;
 
 
 public class MainActivity extends AppCompatActivity implements MediaPlayerControl {
@@ -44,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             ="com.example.android.musicplayer.PlayNewAudio";
 
     private MusicService musicSrv;
+    private MaterialSearchView searchView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +99,13 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 setController();
             }
         });
+
+        Toolbar toolbar = (Toolbar)findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle("Music Player");
+        toolbar.setTitleTextColor(Color.parseColor("#FFFFFF"));
+
+        searchView = (MaterialSearchView) findViewById(R.id.search_view);
     }
 
 
@@ -155,7 +171,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         String selection = MediaStore.Audio.Media.IS_MUSIC + "!= 0";
         String sortOrder = MediaStore.Audio.Media.TITLE + " ASC";
-        Cursor cursor = contentResolver.query(uri, null, selection, null, sortOrder);
+        Cursor cursor = contentResolver.query(uri, null, null, null, sortOrder);
 
         if (cursor != null && cursor.getCount() > 0) {
             audioList = new ArrayList<>();
@@ -251,9 +267,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
-        MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.main, menu);
-
+        getMenuInflater().inflate(R.menu.main,menu);
+        MenuItem item = menu.findItem(R.id.action_search);
+        searchView.setMenuItem(item);
 
         return true;
     }
@@ -264,6 +280,47 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         switch (item.getItemId()) {
             case R.id.action_search:
                 //search
+                searchView.setOnSearchViewListener(new MaterialSearchView.SearchViewListener() {
+                    @Override
+                    public void onSearchViewShown() {
+
+                    }
+
+                    @Override
+                    public void onSearchViewClosed() {
+                        songView = (ListView)findViewById(R.id.song_list);
+                        SongAdapter songAdt = new SongAdapter(getApplicationContext(), audioList);
+                        songView.setAdapter(songAdt);
+                    }
+                });
+
+                searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
+                    @Override
+                    public boolean onQueryTextSubmit(String query) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onQueryTextChange(String newText) {
+                        if(newText != null && !newText.isEmpty()){
+                            ArrayList<Audio> listFound = new ArrayList<Audio>();
+                            for(Audio item:audioList){
+                                if(item.getTitle().contains(newText))
+                                    listFound.add(item);
+                            }
+                            SongAdapter songAdt = new SongAdapter(getApplicationContext(),listFound);
+                            songView.setAdapter(songAdt);
+                        }
+                        else{
+                            //if search text is null
+                            //return default
+                            SongAdapter songAdt = new SongAdapter(getApplicationContext(), audioList);
+                            songView.setAdapter(songAdt);
+                        }
+                        return true;
+                    }
+
+                });
                 break;
             case R.id.action_repeat:
                 musicSrv.toggleRepeat();
@@ -287,10 +344,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                     shuffle.setIcon(R.drawable.shuffle_off);
                 }*/
                 break;
-            case R.id.action_close:
-                stopService(playIntent);
-                musicSrv=null;
-                System.exit(0);
+            case R.id.action_sort:
+                //Sorting Item
+
                 break;
         }
         return super.onOptionsItemSelected(item);

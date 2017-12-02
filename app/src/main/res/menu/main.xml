@@ -8,27 +8,24 @@
         android:orderInCategory="1"
         android:title="search"
         app:showAsAction="always" />
-
     <item
         android:id="@+id/action_repeat"
         android:icon="@drawable/repeat_none"
         android:orderInCategory="2"
         android:title="search"
         app:showAsAction="always" />
-
     <item
         android:id="@+id/action_shuffle"
         android:icon="@drawable/shuffle_off"
         android:orderInCategory="3"
-        app:showAsAction="always"
-        android:title="Shuffle"/>
-
+        android:title="Shuffle"
+        app:showAsAction="always" />
     <item
-        android:id="@+id/action_close"
-        android:icon="@drawable/close"
+        android:id="@+id/action_sort"
+        android:icon="@drawable/sort"
         android:orderInCategory="4"
-        app:showAsAction="always"
-        android:title="End"/>
+        android:title="Sort"
+        app:showAsAction="always"/>
 
 </menu>
 
