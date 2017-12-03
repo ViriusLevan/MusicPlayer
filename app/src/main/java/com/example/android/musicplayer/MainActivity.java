@@ -552,6 +552,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         songView = (ListView)findViewById(R.id.song_list);
         SongAdapter songAdt = new SongAdapter(this, audioList);
         songView.setAdapter(songAdt);
+        stopService(new Intent(this, MusicService.class));
+        startService(new Intent(this, MusicService.class));
         return super.onContextItemSelected(item);
     }
 
