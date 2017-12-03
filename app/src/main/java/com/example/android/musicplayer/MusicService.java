@@ -476,6 +476,8 @@ public class MusicService extends Service implements
         NotificationCompat.Builder notificationBuilder =
                 (NotificationCompat.Builder) new NotificationCompat.Builder(this)
                 .setShowWhen(false)
+                //Set Controler notification bar can't be dismissed
+                .setOngoing(true)
                 // Set the Notification style
                 .setStyle(new NotificationCompat.MediaStyle()
                         // Attach our MediaSession token
@@ -811,6 +813,8 @@ public class MusicService extends Service implements
                 //focus lost for a short time, probably from a notification
                 if(player.isPlaying())
                     player.setVolume(0.1f,0.1f);
+                else if (!player.isPlaying())
+                    player.stop();
                 break;
         }
     }

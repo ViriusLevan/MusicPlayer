@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         loadAudio(R.id.sort_name);
-        playAudio(0);
+        playAudio(getCurrentPosition());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -184,7 +184,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 //            bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
 //            startService(playIntent);
 //        }
-        playAudio(0);
+        playAudio(getCurrentPosition());
     }
 
     //connect to the service
