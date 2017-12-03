@@ -583,14 +583,13 @@ public class MusicService extends Service implements
         return player.isPlaying();
     }
 
-
-
     public void seek(int posn){
         player.seekTo(posn);
     }
 
-    public void go(){
-        player.start();
+    public void loadNewAudioList(){
+        StorageUtil storage = new StorageUtil(getApplicationContext());
+        audioList = storage.loadAudio();
     }
 
 //    public void playPrev(){
