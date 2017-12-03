@@ -2,28 +2,17 @@ package com.example.android.musicplayer;
 
 import android.app.Activity;
 import android.content.ContentUris;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.media.MediaMetadata;
 import android.media.MediaMetadataRetriever;
-import android.media.session.MediaSession;
-import android.media.session.MediaSessionManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.v4.media.MediaDescriptionCompat;
-import android.support.v4.media.MediaMetadataCompat;
-import android.support.v4.media.session.MediaSessionCompat;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import org.cmc.music.common.ID3WriteException;
 import org.cmc.music.metadata.MusicMetadata;
@@ -35,10 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.concurrent.TimeUnit;
 
 import de.umass.lastfm.Authenticator;
 import de.umass.lastfm.Caller;
@@ -265,14 +250,14 @@ public class Metadata extends Activity {
                 || artist.getText().toString().equals("<unknown>")){//if artist name is unknown
             Collection<Track> matchingTracks = Track.search(title.getText().toString(),key);//Search based on title only
             for (Track track : matchingTracks){
-
+                //print
             }
         }
         else{//artist name is known
             Collection<Track> matchingTracks = Track.search(title.getText().toString(),
                     artist.getText().toString(), 25, key);//search based on title, string, and limit results to 25
             for (Track track : matchingTracks){
-
+                //print
             }
         }
 

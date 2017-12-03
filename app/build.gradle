@@ -7,6 +7,7 @@ android {
         applicationId "com.example.android.musicplayer"
         minSdkVersion 21
         targetSdkVersion 26
+        multiDexEnabled true
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -27,7 +28,7 @@ dependencies {
     compile 'com.android.support:appcompat-v7:26.+'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.miguelcatalan:materialsearchview:1.4.0'
-    //    compile 'de.u-mass:lastfm-java:0.1.2'
+    compile 'de.u-mass:lastfm-java:0.1.2'
     compile 'com.google.code.gson:gson:2.7'
     testCompile 'junit:junit:4.12'
     implementation files('C:/Users/ViB/AndroidStudioProjects/MusicPlayer/mylibrary/libs/MyID3_for_Android.jar')
