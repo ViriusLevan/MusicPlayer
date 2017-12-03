@@ -268,6 +268,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         cursor.close();
         StorageUtil storage = new StorageUtil(getApplicationContext());
         storage.storeAudio(audioList);
+        musicSrv.loadNewAudioList();
     }
 
 
