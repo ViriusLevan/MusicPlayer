@@ -18,6 +18,7 @@ import android.net.Uri;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.support.v7.widget.Toolbar;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.ViewTreeObserver;
@@ -52,13 +53,15 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             ="com.example.android.musicplayer.PlayNewAudio";
 
     private MusicService musicSrv;
+    //Search Music
     private MaterialSearchView searchView;
-
+    //Sort number
+    private int sort_by = R.id.sort_name;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        loadAudio();
+        loadAudio(R.id.sort_name);
         playAudio(0);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -165,13 +168,27 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         }
     }
 
-    private void loadAudio() {
+    private void loadAudio(int sortBy) {
         ContentResolver contentResolver = getContentResolver();
 
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         String selection = MediaStore.Audio.Media.IS_MUSIC + "!= 0";
         String sortOrder = MediaStore.Audio.Media.TITLE + " ASC";
-        Cursor cursor = contentResolver.query(uri, null, null, null, sortOrder);
+        switch(sortBy){
+            case R.id.sort_album:
+                sortOrder = MediaStore.Audio.Media.ALBUM + " ASC";
+                break;
+            case R.id.sort_artist:
+                sortOrder = MediaStore.Audio.Media.ARTIST + " ASC";
+                break;
+            case R.id.sort_duration:
+                sortOrder = MediaStore.Audio.Media.DURATION + " ASC";
+                break;
+            case R.id.sort_name:
+                sortOrder = MediaStore.Audio.Media.TITLE + " ASC";
+                break;
+        }
+        Cursor cursor = contentResolver.query(uri, null, selection, null, sortOrder);
 
         if (cursor != null && cursor.getCount() > 0) {
             audioList = new ArrayList<>();
@@ -346,7 +363,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 break;
             case R.id.action_sort:
                 //Sorting Item
-
+                View view = (View) findViewById(item.getItemId());
+                registerForContextMenu(view);
+                openContextMenu(view);
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -485,4 +504,39 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         }
     }
 
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        switch(item.getItemId()){
+            case R.id.sort_album:
+                item.setChecked(true);
+                loadAudio(item.getItemId());
+                break;
+            case R.id.sort_artist:
+                item.setChecked(true);
+                loadAudio(item.getItemId());
+                break;
+            case R.id.sort_duration:
+                item.setChecked(true);
+                loadAudio(item.getItemId());
+                break;
+            case R.id.sort_name:
+                item.setChecked(true);
+                loadAudio(item.getItemId());
+                break;
+        }
+        sort_by = item.getItemId();
+        songView = (ListView)findViewById(R.id.song_list);
+        SongAdapter songAdt = new SongAdapter(this, audioList);
+        songView.setAdapter(songAdt);
+        return super.onContextItemSelected(item);
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.sort_by, menu);
+        MenuItem checked = menu.findItem(sort_by);
+        checked.setChecked(true);
+    }
 }
