@@ -75,14 +75,14 @@
             android:inputType="textPersonName"
             android:textSize="18sp" />
 
-        <EditText
-            android:id="@+id/editWriter"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:hint="Writer"
-            android:inputType="textPersonName"
-            android:textSize="18sp" />
+        <!--<EditText-->
+            <!--android:id="@+id/editWriter"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:ems="10"-->
+            <!--android:hint="Writer"-->
+            <!--android:inputType="textPersonName"-->
+            <!--android:textSize="18sp" />-->
 
 
         <LinearLayout

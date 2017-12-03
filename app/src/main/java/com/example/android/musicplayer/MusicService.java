@@ -59,10 +59,10 @@ public class MusicService extends Service implements
     //media player
     private MediaPlayer player;
     //song list
-    private ArrayList<Song> songArrayList;
-    private List<Song> songList, repeatList;
+    //private ArrayList<Song> songArrayList;
+    //private List<Song> songList, repeatList;
 //    private Queue<Song> songQueue;
-    private Stack<Song> songStack;
+    //private Stack<Song> songStack;
     //current position
     private int songPosn, rCount=0, resumePosition;
 
@@ -101,8 +101,8 @@ public class MusicService extends Service implements
 
     public void onCreate(){
 
-        songStack = new Stack<>();
-        songList = new LinkedList<>();
+        //songStack = new Stack<>();
+        //songList = new LinkedList<>();
 
 
         //create the service
@@ -287,7 +287,7 @@ public class MusicService extends Service implements
             audioIndex = new StorageUtil(getApplicationContext()).loadAudioIndex();
             if (audioIndex != -1 && audioIndex < audioList.size()) {
                 //index is in a valid range
-                Log.d("Broadcast Receiver","AAAAAAA");
+                Log.d("Broadcast Receiver","Success");
                 activeAudio = audioList.get(audioIndex);
             } else {
                 stopSelf();
@@ -384,6 +384,15 @@ public class MusicService extends Service implements
                 .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, activeAudio.getAlbum())
                 .putString(MediaMetadataCompat.METADATA_KEY_TITLE, activeAudio.getTitle())
                 .build());
+    }
+
+    public void setMetadata(MediaMetadataCompat meta){
+
+        StorageUtil storage = new StorageUtil(getApplicationContext());
+        audioList = storage.loadAudio();
+        audioIndex = storage.loadAudioIndex();
+        activeAudio = audioList.get(audioIndex);
+        mediaSession.setMetadata(meta);
     }
 
     public void skipToNext() {
@@ -662,12 +671,12 @@ public class MusicService extends Service implements
 
     public byte getRepeat(){return  repeat;}
 
-    public Song getSong(int songIndex){
-        if(songArrayList.get(songIndex) == null){
-            return null;
-        }
-        return (songArrayList.get(songIndex));
-    }
+//    public Song getSong(int songIndex){
+//        if(songArrayList.get(songIndex) == null){
+//            return null;
+//        }
+//        return (songArrayList.get(songIndex));
+//    }
 
     @Nullable
     @Override

@@ -2,12 +2,15 @@ package com.example.android.musicplayer;
 
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import java.util.ArrayList;
 import android.content.Context;
 import android.view.LayoutInflater;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 
@@ -19,6 +22,7 @@ public class SongAdapter extends BaseAdapter {
 
     private ArrayList<Audio> songs;
     private LayoutInflater songInf;
+    private Context mContext;
 
     @Override
     public int getCount() {
@@ -40,7 +44,7 @@ public class SongAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         //map to song layout
-        RelativeLayout songLay = (RelativeLayout) songInf.inflate
+        final RelativeLayout songLay = (RelativeLayout) songInf.inflate
                 (R.layout.song, parent, false);
         //get title and artist views
         TextView songView = (TextView)songLay.findViewById(R.id.song_title);
@@ -53,9 +57,23 @@ public class SongAdapter extends BaseAdapter {
         //set position as tag
         songLay.setTag(position);
 
-        //spinner tag example, dunno if this works
-        /*settingsSpinner.setTag("bg_color_spinner");
-        settingsSpinner.setAdapter(new BackgroundColorAdapter());*/
+        Button editMeta = (Button)songLay.findViewById(R.id.editMeta);
+        Button addToPlaylist = (Button)songLay.findViewById(R.id.addPlaylist);
+        editMeta.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mContext instanceof MainActivity){
+                    ((MainActivity)mContext).goToMetadataEdit(songLay);
+                }
+            }
+        });
+
+        addToPlaylist.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
 
         return songLay;
     }
@@ -63,6 +81,7 @@ public class SongAdapter extends BaseAdapter {
     public SongAdapter(Context c, ArrayList<Audio> theSongs){
         songs=theSongs;
         songInf=LayoutInflater.from(c);
+        this.mContext=c;
     }
 
 

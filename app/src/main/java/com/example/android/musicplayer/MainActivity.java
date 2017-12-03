@@ -3,10 +3,14 @@ package com.example.android.musicplayer;
 import android.Manifest;
 import android.content.ClipData;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.media.MediaMetadata;
 import android.os.Build;
 import android.provider.MediaStore;
 import android.support.annotation.DrawableRes;
+import android.support.v4.media.MediaMetadataCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import java.util.ArrayList;
@@ -63,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         loadAudio(R.id.sort_name);
-        playAudio(getCurrentPosition());
+        //playAudio(getCurrentPosition());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -149,11 +153,12 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                             String title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
                             String album = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
                             String artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
+                            String id = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media._ID));
 
                             Log.d("Query Text Change", "Is it good? "+title.contains(newText));
                             // Save to audioList
                             if(title.toLowerCase().contains(newText.toLowerCase())){
-                                listFound.add(new Audio(data, title, album, artist));
+                                listFound.add(new Audio(data, title, album, artist, id));
                             }
                         }
                     }
@@ -184,27 +189,28 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 //            bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
 //            startService(playIntent);
 //        }
-        playAudio(getCurrentPosition());
+        //playAudio(getCurrentPosition());
     }
 
     //connect to the service
     private ServiceConnection musicConnection = new ServiceConnection(){
 
-    @Override
-    public void onServiceConnected(ComponentName name, IBinder service) {
-        //Bind to local service, cast the binder, and get local service instance
-        MusicService.MusicBinder binder = (MusicService.MusicBinder)service;
-        //get service
-        musicSrv = binder.getService();
-        //pass list
-        //musicSrv.setList(songList);
-        musicBound = true;
-    }
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            //Bind to local service, cast the binder, and get local service instance
+            MusicService.MusicBinder binder = (MusicService.MusicBinder)service;
+            //get service
+            musicSrv = binder.getService();
+            //pass list
+            //musicSrv.setList(songList);
+            musicBound = true;
+        }
 
-    @Override
-    public void onServiceDisconnected(ComponentName name) {
-            musicBound = false;
-        }};
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+                musicBound = false;
+            }
+    };
 
     private void playAudio(int audioIndex){
         //check if service is active
@@ -260,9 +266,10 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 String title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
                 String album = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
                 String artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
+                String id = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media._ID));
 
                 // Save to audioList
-                audioList.add(new Audio(data, title, album, artist));
+                audioList.add(new Audio(data, title, album, artist, id));
             }
         }
         cursor.close();
@@ -511,22 +518,77 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         Intent i = new Intent(this, Metadata.class);
         //try to use same method as songPicked(), probably need to tag the button,
         // i mean if it CAN be tagged, also need to change parameter if it isn't a view
-        Song selected = musicSrv.getSong(Integer.parseInt(view.getTag().toString()));
+        Audio selected = audioList.get(Integer.parseInt(view.getTag().toString()));
+        StorageUtil storage = new StorageUtil(getApplicationContext());
+        storage.storeAudioIndex(Integer.parseInt(view.getTag().toString()));
+        storage.storeAudio(audioList);
         if(selected !=null){
-            long id = selected.getID();
+            String id = selected.getId();
             String title = selected.getTitle();
             String artist = selected.getArtist();
-            if(id == -1){
-                //do nothing
-                //stopgap measure till i find a better method to pass
-                //it's probably better now, but i haven't tested it yet
-            }else{
-                i.putExtra("trackID", id);
-                i.putExtra("trackTitle", title);
-                i.putExtra("trackArtist", artist);
-            }
+            i.putExtra("trackID", id);
+            i.putExtra("trackTitle", title);
+            startActivity(i);
         }
     }
+
+//    @Override
+//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+//
+//        if(resultCode == RESULT_OK && requestCode == 1) {
+//            String title = data.getStringExtra("Title");
+//            String artist = data.getStringExtra("Artist");
+//            String album = data.getStringExtra("Album");
+//            String genre = data.getStringExtra("Genre");
+//            String composer = data.getStringExtra("Composer");
+//            String writer = data.getStringExtra("Writer");
+//
+//
+//            MediaMetadataCompat.Builder builder = new MediaMetadataCompat.Builder();
+//            builder.putString(MediaMetadata.METADATA_KEY_TITLE, title);
+//            builder.putString(MediaMetadata.METADATA_KEY_ARTIST, artist);
+//            builder.putString(MediaMetadata.METADATA_KEY_ALBUM, album);
+//            builder.putString(MediaMetadata.METADATA_KEY_GENRE, genre);
+//            builder.putString(MediaMetadata.METADATA_KEY_COMPOSER, composer);
+//            builder.putString(MediaMetadata.METADATA_KEY_WRITER, writer);
+//
+//
+//            Long trackNum = data.getLongExtra("Track Number",1);
+//            if(trackNum != 9999) {
+//                builder.putLong(MediaMetadata.METADATA_KEY_TRACK_NUMBER, trackNum);
+//            }
+//            byte[] byteArray = getIntent().getByteArrayExtra("Album Art");
+//            if(byteArray!=null){
+//                Bitmap bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+//                builder.putBitmap(MediaMetadata.METADATA_KEY_ART, bmp);
+//            }
+//
+//            if(!musicBound){
+//                //connect to the service
+//                ServiceConnection musicConnection = new ServiceConnection(){
+//
+//                    @Override
+//                    public void onServiceConnected(ComponentName name, IBinder service) {
+//                        //Bind to local service, cast the binder, and get local service instance
+//                        MusicService.MusicBinder binder = (MusicService.MusicBinder)service;
+//                        //get service
+//                        musicSrv = binder.getService();
+//                        //pass list
+//                        //musicSrv.setList(songList);
+//                        musicBound = true;
+//                    }
+//
+//                    @Override
+//                    public void onServiceDisconnected(ComponentName name) {
+//                        musicBound = false;
+//                    }
+//                };
+//            }
+//            musicSrv.setMetadata(builder.build());
+//        }
+//
+//    }
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
@@ -563,4 +625,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         MenuItem checked = menu.findItem(sort_by);
         checked.setChecked(true);
     }
+
+
 }

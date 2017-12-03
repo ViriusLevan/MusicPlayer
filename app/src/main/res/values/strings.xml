@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">MusicPlayer</string>
+    <string-array name="song_setting">
+        <item>Edit Metadata</item>
+        <item>Add to playlist</item>
+    </string-array>
 </resources>
