@@ -514,7 +514,7 @@ public class MusicService extends Service implements
     private void removeNotification() {
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.cancel(NOTIFICATION_ID);
+        notificationManager.cancelAll();
     }
 
     private PendingIntent playbackAction(int actionNumber) {
@@ -778,7 +778,7 @@ public class MusicService extends Service implements
         if (phoneStateListener != null) {
             telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
         }
-
+        stopForeground(true);
         removeNotification();
 
         //unregister BroadcastReceivers
@@ -788,7 +788,7 @@ public class MusicService extends Service implements
         //clear cached playlist
         new StorageUtil(getApplicationContext()).clearCachedAudioPlaylist();
 
-        //stopForeground(true);
+
     }
 
     @Override
