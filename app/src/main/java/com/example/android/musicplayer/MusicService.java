@@ -476,8 +476,6 @@ public class MusicService extends Service implements
         NotificationCompat.Builder notificationBuilder =
                 (NotificationCompat.Builder) new NotificationCompat.Builder(this)
                 .setShowWhen(false)
-                //Set Controler notification bar can't be dismissed
-                .setOngoing(true)
                 // Set the Notification style
                 .setStyle(new NotificationCompat.MediaStyle()
                         // Attach our MediaSession token
