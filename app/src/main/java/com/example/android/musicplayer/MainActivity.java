@@ -18,6 +18,7 @@ import android.net.Uri;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -63,7 +64,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         setContentView(R.layout.activity_main);
         loadAudio(R.id.sort_name);
         playAudio(0);
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -109,6 +109,69 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         toolbar.setTitleTextColor(Color.parseColor("#FFFFFF"));
 
         searchView = (MaterialSearchView) findViewById(R.id.search_view);
+
+        searchView.setOnSearchViewListener(new MaterialSearchView.SearchViewListener() {
+            @Override
+            public void onSearchViewShown() {
+                Log.d("Search Listener", "Shown");
+            }
+
+            @Override
+            public void onSearchViewClosed() {
+                Log.d("Search Listener", "Closed");
+                songView = (ListView)findViewById(R.id.song_list);
+                SongAdapter songAdt = new SongAdapter(getApplicationContext(), audioList);
+                songView.setAdapter(songAdt);
+            }
+        });
+
+        searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if(newText != null && !newText.isEmpty()){
+                    Log.d("Query Text Change", "newText : "+newText);
+                    ContentResolver contentResolver = getContentResolver();
+
+                    Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+                    String selection = MediaStore.Audio.Media.IS_MUSIC + "!= 0";
+                    String sortOrder = MediaStore.Audio.Media.TITLE + " ASC";
+                    Cursor cursor = contentResolver.query(uri, null, null, null, sortOrder);
+
+                    ArrayList<Audio> listFound = new ArrayList<>();
+                    if (cursor != null && cursor.getCount() > 0) {
+                        while (cursor.moveToNext()) {
+                            String data = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
+                            String title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
+                            String album = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
+                            String artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
+
+                            Log.d("Query Text Change", "Is it good? "+title.contains(newText));
+                            // Save to audioList
+                            if(title.toLowerCase().contains(newText.toLowerCase())){
+                                listFound.add(new Audio(data, title, album, artist));
+                            }
+                        }
+                    }
+                    cursor.close();
+
+                    SongAdapter songAdt = new SongAdapter(getApplicationContext(),listFound);
+                    songView.setAdapter(songAdt);
+                }
+                else{
+                    //if search text is null
+                    //return default
+                    SongAdapter songAdt = new SongAdapter(getApplicationContext(), audioList);
+                    songView.setAdapter(songAdt);
+                }
+                return true;
+            }
+
+        });
     }
 
 
@@ -188,7 +251,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 sortOrder = MediaStore.Audio.Media.TITLE + " ASC";
                 break;
         }
-        Cursor cursor = contentResolver.query(uri, null, selection, null, sortOrder);
+        Cursor cursor = contentResolver.query(uri, null, null, null, sortOrder);
 
         if (cursor != null && cursor.getCount() > 0) {
             audioList = new ArrayList<>();
@@ -257,7 +320,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         controller.setMediaPlayer(this);
         controller.setAnchorView(findViewById(R.id.song_list));
         controller.setEnabled(true);
-        controller.show();
+//        controller.show();
     }
 
     //play next
@@ -295,50 +358,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     public boolean onOptionsItemSelected(MenuItem item) {
         //menu item selected
         switch (item.getItemId()) {
-            case R.id.action_search:
-                //search
-                searchView.setOnSearchViewListener(new MaterialSearchView.SearchViewListener() {
-                    @Override
-                    public void onSearchViewShown() {
-
-                    }
-
-                    @Override
-                    public void onSearchViewClosed() {
-                        songView = (ListView)findViewById(R.id.song_list);
-                        SongAdapter songAdt = new SongAdapter(getApplicationContext(), audioList);
-                        songView.setAdapter(songAdt);
-                    }
-                });
-
-                searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
-                    @Override
-                    public boolean onQueryTextSubmit(String query) {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean onQueryTextChange(String newText) {
-                        if(newText != null && !newText.isEmpty()){
-                            ArrayList<Audio> listFound = new ArrayList<Audio>();
-                            for(Audio item:audioList){
-                                if(item.getTitle().contains(newText))
-                                    listFound.add(item);
-                            }
-                            SongAdapter songAdt = new SongAdapter(getApplicationContext(),listFound);
-                            songView.setAdapter(songAdt);
-                        }
-                        else{
-                            //if search text is null
-                            //return default
-                            SongAdapter songAdt = new SongAdapter(getApplicationContext(), audioList);
-                            songView.setAdapter(songAdt);
-                        }
-                        return true;
-                    }
-
-                });
-                break;
             case R.id.action_repeat:
                 musicSrv.toggleRepeat();
 
