@@ -94,10 +94,11 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
         SongAdapter songAdt = new SongAdapter(this, audioList);
         songView.setAdapter(songAdt);
-
+        
         songView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Log.d("Play Audio", "Index : "+i);
                 playAudio(i);
             }
         });
@@ -586,7 +587,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     @Override
     public void onSearchViewClosed() {
         Log.d("Search Listener", "Closed");
-        loadAudio(R.id.sort_name, null);
+        loadAudio(sort_by, null);
         songView = (ListView)findViewById(R.id.song_list);
         SongAdapter songAdt = new SongAdapter(getApplicationContext(), audioList);
         songView.setAdapter(songAdt);
@@ -609,7 +610,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         else{
             //if search text is null
             //return default
-            loadAudio(R.id.sort_name, null);
+            loadAudio(sort_by, null);
             SongAdapter songAdt = new SongAdapter(getApplicationContext(), audioList);
             songView.setAdapter(songAdt);
         }
