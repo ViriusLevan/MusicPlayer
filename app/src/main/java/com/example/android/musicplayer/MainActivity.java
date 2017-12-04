@@ -103,6 +103,14 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             }
         });
 
+        songView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                goToMetadataEdit(null, i);
+                return true;
+            }
+        });
+
         //You need a reference to a layout element
         RelativeLayout RLM = (RelativeLayout) findViewById(R.id.RLMain);
 
@@ -464,13 +472,23 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         moveTaskToBack(true);
     }
 
-    protected void goToMetadataEdit(View view){
+    protected void goToMetadataEdit(View view, int pos){
         Intent i = new Intent(this, Metadata.class);
         //try to use same method as songPicked(), probably need to tag the button,
         // i mean if it CAN be tagged, also need to change parameter if it isn't a view
-        Audio selected = audioList.get(Integer.parseInt(view.getTag().toString()));
+
+        Audio selected = audioList.get(0);
+        if(view != null){
+            selected = audioList.get(Integer.parseInt(view.getTag().toString()));
+        }else if (pos != -1){
+            selected = audioList.get(pos);
+        }
         StorageUtil storage = new StorageUtil(getApplicationContext());
-        storage.storeAudioIndex(Integer.parseInt(view.getTag().toString()));
+        if(view != null){
+            storage.storeAudioIndex(Integer.parseInt(view.getTag().toString()));
+        }else if (pos != -1){
+            storage.storeAudioIndex(pos);
+        }
         storage.storeAudio(audioList);
         if(selected !=null){
             String id = selected.getId();
@@ -564,8 +582,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         SongAdapter songAdt = new SongAdapter(this, audioList);
         songView.setAdapter(songAdt);
 
-        stopService(new Intent(this, MusicService.class));
-        startService(new Intent(this, MusicService.class));
+//        stopService(new Intent(this, MusicService.class));
+//        startService(new Intent(this, MusicService.class));
         return super.onContextItemSelected(item);
     }
 
@@ -591,8 +609,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         SongAdapter songAdt = new SongAdapter(getApplicationContext(), audioList);
         songView.setAdapter(songAdt);
 
-        stopService(new Intent(this, MusicService.class));
-        startService(new Intent(this, MusicService.class));
+//        stopService(new Intent(this, MusicService.class));
+//        startService(new Intent(this, MusicService.class));
     }
 
     @Override
@@ -617,8 +635,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             songView.setAdapter(songAdt);
 
         }
-        stopService(new Intent(this, MusicService.class));
-        startService(new Intent(this, MusicService.class));
+//        stopService(new Intent(this, MusicService.class));
+//        startService(new Intent(this, MusicService.class));
         return true;
     }
 }

@@ -63,7 +63,7 @@ public class SongAdapter extends BaseAdapter {
             @Override
             public void onClick(View v) {
                 if(mContext instanceof MainActivity){
-                    ((MainActivity)mContext).goToMetadataEdit(songLay);
+                    ((MainActivity)mContext).goToMetadataEdit(songLay, -1);
                 }
             }
         });
