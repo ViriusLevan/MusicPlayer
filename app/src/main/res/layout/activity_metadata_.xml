@@ -63,7 +63,7 @@
             android:layout_height="wrap_content"
             android:ems="10"
             android:hint="Track Number"
-            android:inputType="textPersonName"
+            android:inputType="number"
             android:textSize="18sp" />
 
         <EditText

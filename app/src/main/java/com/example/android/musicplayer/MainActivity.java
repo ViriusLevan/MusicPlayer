@@ -495,6 +495,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             String title = selected.getTitle();
             String artist = selected.getArtist();
             i.putExtra("trackID", id);
+            i.putExtra("trackArtist", artist);
+            i.putExtra("trackPath", selected.getData());
             i.putExtra("trackTitle", title);
             startActivity(i);
         }
