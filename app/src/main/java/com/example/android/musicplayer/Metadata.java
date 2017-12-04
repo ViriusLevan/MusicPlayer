@@ -15,6 +15,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ListView;
+import android.widget.TextView;
 
 import org.cmc.music.common.ID3WriteException;
 import org.cmc.music.metadata.MusicMetadata;
@@ -25,6 +27,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import de.umass.lastfm.Authenticator;
@@ -44,6 +47,11 @@ public class Metadata extends Activity {
     Button saveButton, getMetaButton, resetButton;
 
     MediaMetadataRetriever metaRetriever;
+
+    ListView lvMetadata;
+    ArrayList<Metadata> arrmd= new ArrayList<>();
+    ResultMetadataAdapter adapter;
+    TextView result= (TextView) findViewById(R.id.textResult);
 
     byte[] art;
 
@@ -73,9 +81,19 @@ public class Metadata extends Activity {
             }
         });
 
+        lvMetadata=(ListView) findViewById(R.id.listResult);
+        adapter= new ResultMetadataAdapter(this,arrmd);
+        lvMetadata.setAdapter(adapter);
+
         getMetaButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                result.setText("Result");
+                //got lost here too :(    alv
+                //Metadata metadata= new Metadata();
+                //arrmd(metadata);
+                //^^^^that must br wrong, dun know lel
+                adapter.notifyDataSetChanged();
                 getMetadata();
             }
         });
@@ -289,6 +307,7 @@ public class Metadata extends Activity {
                 for (Track track : matchingTracks){
                     //print
                     Log.i("Result",track.getArtist());
+
                 }
             }
             return "ass";
