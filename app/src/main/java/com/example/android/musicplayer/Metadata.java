@@ -51,7 +51,7 @@ public class Metadata extends Activity {
     ListView lvMetadata;
     ArrayList<Metadata> arrmd= new ArrayList<>();
     ResultMetadataAdapter adapter;
-    TextView result= (TextView) findViewById(R.id.textResult);
+    TextView result;
 
     byte[] art;
 
@@ -61,6 +61,9 @@ public class Metadata extends Activity {
         setContentView(R.layout.activity_metadata_);
         //Declarations
         getInit();
+
+        result = (TextView) findViewById(R.id.textResult);
+
         //Metadata retrieval
         //get id
         long currSong = Long.parseLong(getIntent().getStringExtra("trackID"));
