@@ -586,6 +586,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     @Override
     public void onSearchViewClosed() {
         Log.d("Search Listener", "Closed");
+        loadAudio(R.id.sort_name, null);
         songView = (ListView)findViewById(R.id.song_list);
         SongAdapter songAdt = new SongAdapter(getApplicationContext(), audioList);
         songView.setAdapter(songAdt);
@@ -608,6 +609,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         else{
             //if search text is null
             //return default
+            loadAudio(R.id.sort_name, null);
             SongAdapter songAdt = new SongAdapter(getApplicationContext(), audioList);
             songView.setAdapter(songAdt);
         }
