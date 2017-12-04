@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     private MenuItem repeat, shuffle;
     public static final String Broadcast_PLAY_NEW_AUDIO
             ="com.example.android.musicplayer.PlayNewAudio";
+    DatabaseHandler dbHandler;
 
     private MusicService musicSrv;
     //Search Music
@@ -66,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        dbHandler = new DatabaseHandler(this);
         setContentView(R.layout.activity_main);
         loadAudio(R.id.sort_name, null);
         //playAudio(getCurrentPosition());
