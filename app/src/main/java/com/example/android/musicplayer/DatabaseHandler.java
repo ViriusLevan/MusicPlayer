@@ -64,6 +64,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 column,"Name = ? ",
                 wArgs,null, null, null, "1");
         Integer pID = cursor.getInt(cursor.getColumnIndex("ID"));
+        cursor.close();
 
         //if query for audio is empty, add audio first, then add audio to playlist_has_audio
         String[]aCol = {"ID"};
@@ -80,14 +81,33 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             values.put("MID", newAudio.getId());
             dbw.insert("Audio", null, values);
         }
+        aCur.close();
         Cursor bCur = dbr.query("Audio",
                 column, "Title = ? AND Artist = ?",
                 awArgs, null, null, null, "1");
         Integer aID = bCur.getInt(bCur.getColumnIndex("ID"));
+        bCur.close();
 
         dbr.close();
         String sql = "INSERT INTO Playlist_Has_Audio(PID,AID) VALUES ("+ pID +" , "+ aID +") ";
         dbw.execSQL(sql);
+    }
+
+    public ArrayList<String> getAllPlaylist(){
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        String[] column = {"Name"};
+        Cursor cursor = db.query("Playlist", column, null,
+                null, null, null, null);
+        ArrayList<String> plList = new ArrayList<String>();
+        while(cursor.moveToNext())
+        {
+            plList.add(cursor.getString(cursor.getColumnIndex("Name")));
+        }
+        cursor.close();
+        db.close();
+
+        return plList;
     }
 
     public ArrayList<Audio> getAllAudioFromPlaylist(String playlistName)
@@ -129,6 +149,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 column,"Name = ? ",
                 wArgs,null, null, null, "1");
         Integer pID = cursor.getInt(cursor.getColumnIndex("ID"));
+        cursor.close();
 
         //query the audio ID
         String[]aCol = {"ID"};
@@ -137,6 +158,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 column, "Title = ? AND Artist = ?",
                 awArgs, null, null, null, "1");
         Integer aID = aCur.getInt(aCur.getColumnIndex("ID"));
+        aCur.close();
 
         SQLiteDatabase db = this.getWritableDatabase();
         String whereField = "AID = ? AND PID = ?";

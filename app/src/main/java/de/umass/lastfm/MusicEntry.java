@@ -204,12 +204,9 @@ public abstract class MusicEntry extends ImageHolder {
 		if (element.hasChild("percentagechange")) {
 			entry.percentageChange = Integer.parseInt(element.getChildText("percentagechange"));
 		}
-		int playcount = playcountString == null || playcountString.length() == 0 ? -1 : Integer
-				.parseInt(playcountString);
-		int userPlaycount = userPlaycountString == null || userPlaycountString.length() == 0 ? -1 : Integer
-				.parseInt(userPlaycountString);
-		int listeners = listenersString == null || listenersString.length() == 0 ? -1 : Integer
-				.parseInt(listenersString);
+		int playcount = playcountString == null || playcountString.length() == 0 ? -1 : maybeParseInt(playcountString);
+		int userPlaycount = userPlaycountString == null || userPlaycountString.length() == 0 ? -1 : maybeParseInt(userPlaycountString);
+		int listeners = listenersString == null || listenersString.length() == 0 ? -1 : maybeParseInt(listenersString);
 		// streamable
 		String s = element.getChildText("streamable");
 		boolean streamable = s != null && s.length() != 0 && Integer.valueOf(1).equals(maybeParseInt(s));
