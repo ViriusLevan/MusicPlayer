@@ -572,8 +572,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.sort_by, menu);
+        getMenuInflater().inflate(R.menu.sort_by, menu);
         MenuItem checked = menu.findItem(sort_by);
         checked.setChecked(true);
     }
