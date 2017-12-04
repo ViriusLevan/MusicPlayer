@@ -28,6 +28,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -44,7 +45,7 @@ import android.widget.RelativeLayout;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
 
 
-public class MainActivity extends AppCompatActivity implements MediaPlayerControl {
+public class MainActivity extends AppCompatActivity implements MediaPlayerControl, MaterialSearchView.SearchViewListener, MaterialSearchView.OnQueryTextListener {
 
     //private ArrayList<Song> songList;
     public ArrayList<Audio> audioList;
@@ -66,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        loadAudio(R.id.sort_name);
+        loadAudio(R.id.sort_name, null);
         //playAudio(getCurrentPosition());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -94,6 +95,12 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         SongAdapter songAdt = new SongAdapter(this, audioList);
         songView.setAdapter(songAdt);
 
+        songView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                playAudio(i);
+            }
+        });
 
         //You need a reference to a layout element
         RelativeLayout RLM = (RelativeLayout) findViewById(R.id.RLMain);
@@ -114,69 +121,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
         searchView = (MaterialSearchView) findViewById(R.id.search_view);
 
-        searchView.setOnSearchViewListener(new MaterialSearchView.SearchViewListener() {
-            @Override
-            public void onSearchViewShown() {
-                Log.d("Search Listener", "Shown");
-            }
+        searchView.setOnSearchViewListener(this);
 
-            @Override
-            public void onSearchViewClosed() {
-                Log.d("Search Listener", "Closed");
-                songView = (ListView)findViewById(R.id.song_list);
-                SongAdapter songAdt = new SongAdapter(getApplicationContext(), audioList);
-                songView.setAdapter(songAdt);
-            }
-        });
-
-        searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                if(newText != null && !newText.isEmpty()){
-                    Log.d("Query Text Change", "newText : "+newText);
-                    ContentResolver contentResolver = getContentResolver();
-
-                    Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-                    String selection = MediaStore.Audio.Media.IS_MUSIC + "!= 0";
-                    String sortOrder = MediaStore.Audio.Media.TITLE + " ASC";
-                    Cursor cursor = contentResolver.query(uri, null, null, null, sortOrder);
-
-                    ArrayList<Audio> listFound = new ArrayList<>();
-                    if (cursor != null && cursor.getCount() > 0) {
-                        while (cursor.moveToNext()) {
-                            String data = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
-                            String title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
-                            String album = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
-                            String artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
-                            String id = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media._ID));
-
-                            Log.d("Query Text Change", "Is it good? "+title.contains(newText));
-                            // Save to audioList
-                            if(title.toLowerCase().contains(newText.toLowerCase())){
-                                listFound.add(new Audio(data, title, album, artist, id));
-                            }
-                        }
-                    }
-                    cursor.close();
-
-                    SongAdapter songAdt = new SongAdapter(getApplicationContext(),listFound);
-                    songView.setAdapter(songAdt);
-                }
-                else{
-                    //if search text is null
-                    //return default
-                    SongAdapter songAdt = new SongAdapter(getApplicationContext(), audioList);
-                    songView.setAdapter(songAdt);
-                }
-                return true;
-            }
-
-        });
+        searchView.setOnQueryTextListener(this);
     }
 
 
@@ -237,7 +184,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         }
     }
 
-    private void loadAudio(int sortBy) {
+    private void loadAudio(int sortBy, String filter) {
         ContentResolver contentResolver = getContentResolver();
 
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
@@ -269,7 +216,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 String id = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media._ID));
 
                 // Save to audioList
-                audioList.add(new Audio(data, title, album, artist, id));
+                if(filter == null || title.toLowerCase().contains(filter.toLowerCase())){
+                    audioList.add(new Audio(data, title, album, artist, id));
+                }
             }
         }
         cursor.close();
@@ -595,19 +544,19 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         switch(item.getItemId()){
             case R.id.sort_album:
                 item.setChecked(true);
-                loadAudio(item.getItemId());
+                loadAudio(item.getItemId(), null);
                 break;
             case R.id.sort_artist:
                 item.setChecked(true);
-                loadAudio(item.getItemId());
+                loadAudio(item.getItemId(), null);
                 break;
             case R.id.sort_duration:
                 item.setChecked(true);
-                loadAudio(item.getItemId());
+                loadAudio(item.getItemId(), null);
                 break;
             case R.id.sort_name:
                 item.setChecked(true);
-                loadAudio(item.getItemId());
+                loadAudio(item.getItemId(), null);
                 break;
         }
         sort_by = item.getItemId();
@@ -629,4 +578,39 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     }
 
 
+    @Override
+    public void onSearchViewShown() {
+        Log.d("Search Listener", "Shown");
+    }
+
+    @Override
+    public void onSearchViewClosed() {
+        Log.d("Search Listener", "Closed");
+        songView = (ListView)findViewById(R.id.song_list);
+        SongAdapter songAdt = new SongAdapter(getApplicationContext(), audioList);
+        songView.setAdapter(songAdt);
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        if(newText != null && !newText.isEmpty()){
+            Log.d("Query Text Change", "newText : "+newText);
+            loadAudio(R.id.sort_name, newText);
+
+            SongAdapter songAdt = new SongAdapter(getApplicationContext(),audioList);
+            songView.setAdapter(songAdt);
+        }
+        else{
+            //if search text is null
+            //return default
+            SongAdapter songAdt = new SongAdapter(getApplicationContext(), audioList);
+            songView.setAdapter(songAdt);
+        }
+        return true;
+    }
 }
