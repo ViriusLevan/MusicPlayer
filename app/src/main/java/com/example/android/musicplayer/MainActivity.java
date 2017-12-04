@@ -205,7 +205,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 sortOrder = MediaStore.Audio.Media.TITLE + " ASC";
                 break;
         }
-        Cursor cursor = contentResolver.query(uri, null, null, null, sortOrder);
+        Cursor cursor = contentResolver.query(uri, null, selection, null, sortOrder);
 
         if (cursor != null && cursor.getCount() > 0) {
             audioList = new ArrayList<>();
@@ -561,9 +561,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 break;
         }
         sort_by = item.getItemId();
-        songView = (ListView)findViewById(R.id.song_list);
         SongAdapter songAdt = new SongAdapter(this, audioList);
         songView.setAdapter(songAdt);
+
         stopService(new Intent(this, MusicService.class));
         startService(new Intent(this, MusicService.class));
         return super.onContextItemSelected(item);
@@ -588,9 +588,12 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     public void onSearchViewClosed() {
         Log.d("Search Listener", "Closed");
         loadAudio(sort_by, null);
-        songView = (ListView)findViewById(R.id.song_list);
+
         SongAdapter songAdt = new SongAdapter(getApplicationContext(), audioList);
         songView.setAdapter(songAdt);
+
+        stopService(new Intent(this, MusicService.class));
+        startService(new Intent(this, MusicService.class));
     }
 
     @Override
@@ -613,7 +616,10 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             loadAudio(sort_by, null);
             SongAdapter songAdt = new SongAdapter(getApplicationContext(), audioList);
             songView.setAdapter(songAdt);
+
         }
+        stopService(new Intent(this, MusicService.class));
+        startService(new Intent(this, MusicService.class));
         return true;
     }
 }
