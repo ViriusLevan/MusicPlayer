@@ -10,19 +10,22 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+
+import de.umass.lastfm.Track;
+
 /**
  * Created by user on 05-Dec-17.
  */
 
-public class ResultMetadataAdapter extends ArrayAdapter<Metadata> {
-    public ResultMetadataAdapter(Context context, ArrayList<Metadata> resultData){
+public class ResultMetadataAdapter extends ArrayAdapter<Track> {
+    public ResultMetadataAdapter(Context context, ArrayList<Track> resultData){
         super(context,R.layout.resultmetadata, resultData);
     }
 
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        Metadata metadata= getItem(position);
+        Track metadata= getItem(position);
         if(convertView==null){
             convertView= LayoutInflater.from(getContext()).inflate(R.layout.resultmetadata,parent,false);
         }

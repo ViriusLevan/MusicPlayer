@@ -17,6 +17,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.cmc.music.common.ID3WriteException;
 import org.cmc.music.metadata.MusicMetadata;
@@ -49,7 +50,6 @@ public class Metadata extends Activity {
     MediaMetadataRetriever metaRetriever;
 
     ListView lvMetadata;
-    ArrayList<Metadata> arrmd= new ArrayList<>();
     ResultMetadataAdapter adapter;
     TextView result;
 
@@ -85,8 +85,6 @@ public class Metadata extends Activity {
         });
 
         lvMetadata=(ListView) findViewById(R.id.listResult);
-        adapter= new ResultMetadataAdapter(this,arrmd);
-        lvMetadata.setAdapter(adapter);
 
         getMetaButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -293,14 +291,18 @@ public class Metadata extends Activity {
             String secret = "6c2dffa86c3ef43b5a2138df8bcc2ac6";
 
             Session session = Authenticator.getMobileSession(user,password,key,secret);
+
+            ArrayList<Track>  tt = new ArrayList<Track>();
             if(artist.getText().toString().equals("Unknown Artist")
                     || artist.getText().toString().equals("<unknown>")){//if artist name is unknown
                 Collection<Track> matchingTracks = Track.search(title.getText().toString(),key);//Search based on title only
                 if(matchingTracks.isEmpty())Log.i("Matching Tracks","No Results");
                 for (Track track : matchingTracks){
-                    //print
-                    Log.i("Result",track.getArtist());
+                    tt.add(track);
                 }
+                if(matchingTracks.isEmpty())
+                    Toast.makeText(getApplicationContext(), "No results found",
+                            Toast.LENGTH_SHORT).show();
             }
             else{//artist name is known
                 Collection<Track> matchingTracks = Track.search(
@@ -309,10 +311,15 @@ public class Metadata extends Activity {
                 if(matchingTracks.isEmpty())Log.i("Matching Tracks","No Results");
                 for (Track track : matchingTracks){
                     //print
-                    Log.i("Result",track.getArtist());
-
+                    tt.add(track);
                 }
+                if(matchingTracks.isEmpty())
+                    Toast.makeText(getApplicationContext(), "No results found",
+                            Toast.LENGTH_SHORT).show();
             }
+            adapter= new ResultMetadataAdapter(getApplicationContext(), tt);
+            lvMetadata.setAdapter(adapter);
+            adapter.notifyDataSetChanged();
             return "ass";
         }
 

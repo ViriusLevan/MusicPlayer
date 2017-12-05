@@ -31,5 +31,5 @@ dependencies {
     compile 'de.u-mass:lastfm-java:0.1.2'
     compile 'com.google.code.gson:gson:2.7'
     testCompile 'junit:junit:4.12'
-    implementation files('C:/Users/ViB/AndroidStudioProjects/MusicPlayer/mylibrary/libs/MyID3_for_Android.jar')
+    implementation files('C:/Users/Virius/AndroidStudioProjects/MusicPlayer/mylibrary/libs/MyID3_for_Android.jar')
 }
