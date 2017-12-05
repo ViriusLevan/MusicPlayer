@@ -94,7 +94,6 @@ public class Metadata extends Activity {
                 //Metadata metadata= new Metadata();
                 //arrmd(metadata);
                 //^^^^that must br wrong, dun know lel
-                adapter.notifyDataSetChanged();
                 getMetadata();
             }
         });
@@ -188,7 +187,6 @@ public class Metadata extends Activity {
 
     @Override
     public void onBackPressed() {
-        setResult(RESULT_CANCELED);
         finish();
     }
 
@@ -299,6 +297,7 @@ public class Metadata extends Activity {
                 if(matchingTracks.isEmpty())Log.i("Matching Tracks","No Results");
                 for (Track track : matchingTracks){
                     tt.add(track);
+                    Log.i("Title - Artist",track.getName() +" - "+track.getArtist());
                 }
                 if(matchingTracks.isEmpty())
                     Toast.makeText(getApplicationContext(), "No results found",
@@ -312,14 +311,12 @@ public class Metadata extends Activity {
                 for (Track track : matchingTracks){
                     //print
                     tt.add(track);
+                    Log.i("Title - Artist",track.getName() +" - "+track.getArtist());
                 }
-                if(matchingTracks.isEmpty())
-                    Toast.makeText(getApplicationContext(), "No results found",
-                            Toast.LENGTH_SHORT).show();
+                if(matchingTracks.isEmpty())Log.d("Matching Tracks","NO results found");
             }
             adapter= new ResultMetadataAdapter(getApplicationContext(), tt);
             lvMetadata.setAdapter(adapter);
-            adapter.notifyDataSetChanged();
             return "ass";
         }
 

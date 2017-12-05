@@ -34,11 +34,20 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/toolbar" />
 
+    <TextView
+        android:id="@+id/SongNameTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Title - Artist"
+        android:layout_above="@id/media_controller"/>
+
     <MediaController
         android:id="@+id/media_controller"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:visibility="visible" />
+
+
 
 </RelativeLayout>

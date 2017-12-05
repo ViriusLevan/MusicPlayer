@@ -41,6 +41,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.MediaController.MediaPlayerControl;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
 
@@ -50,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     //private ArrayList<Song> songList;
     public ArrayList<Audio> audioList;
     private ListView songView;
+    private TextView currentlyPlaying;
     private Intent playIntent;
     boolean musicBound=false;
     private MusicController controller;
@@ -84,6 +86,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         }
 
         songView = (ListView)findViewById(R.id.song_list);
+        currentlyPlaying = (TextView) findViewById(R.id.SongNameTV);
 //        songList = new ArrayList<Song>();
 //
 //        getSongList();
@@ -193,6 +196,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             Intent broadcastIntent = new Intent(Broadcast_PLAY_NEW_AUDIO);
             sendBroadcast(broadcastIntent);
         }
+        currentlyPlaying.setText(audioList.get(audioIndex).getTitle() + " - " +
+                                    audioList.get(audioIndex).getArtist());
     }
 
     private void loadAudio(int sortBy, String filter) {
